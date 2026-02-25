@@ -64,6 +64,9 @@ public class SecurityConfiguration {
     public static final String TOKEN_BASED_AUTH_ENTRY_POINT = "/api/**";
 
     @Autowired
+    private HttpAuthStrategyProperties httpAuthStrategyProperties;
+
+    @Autowired
     private ThingsboardErrorResponseHandler restAccessDeniedHandler;
 
     @Autowired
@@ -108,18 +111,29 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(config -> {
                 })
-                .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(config -> config
-                        .requestMatchers(NON_TOKEN_BASED_AUTH_ENTRY_POINTS).permitAll() // static resources, user activation and password reset end-points (webjars included)
-                        .requestMatchers(
-                                FORM_BASED_LOGIN_ENTRY_POINT, // Login end-point
-                                TOKEN_REFRESH_ENTRY_POINT).permitAll() // Token refresh end-point
-                        .requestMatchers(TOKEN_BASED_AUTH_ENTRY_POINT).authenticated() // Protected API End-points
-                        .anyRequest().permitAll())
-                .exceptionHandling(config -> config.accessDeniedHandler(restAccessDeniedHandler))
-                .addFilterBefore(buildRestLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(buildJwtTokenAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
+                .sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        // Check if authentication is enabled
+        if (httpAuthStrategyProperties.isAuthEnabled()) {
+            // BASIC authentication strategy - JWT-based authentication
+            http.authorizeHttpRequests(config -> config
+                            .requestMatchers(NON_TOKEN_BASED_AUTH_ENTRY_POINTS).permitAll() // static resources, user activation and password reset end-points (webjars included)
+                            .requestMatchers(
+                                    FORM_BASED_LOGIN_ENTRY_POINT, // Login end-point
+                                    TOKEN_REFRESH_ENTRY_POINT).permitAll() // Token refresh end-point
+                            .requestMatchers(TOKEN_BASED_AUTH_ENTRY_POINT).authenticated() // Protected API End-points
+                            .anyRequest().permitAll())
+                    .exceptionHandling(config -> config.accessDeniedHandler(restAccessDeniedHandler))
+                    .addFilterBefore(buildRestLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(buildJwtTokenAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+                    .addFilterBefore(authExceptionHandler, buildRestLoginProcessingFilter().getClass());
+        } else {
+            // NONE authentication strategy - disable authentication for web interface
+            http.authorizeHttpRequests(config -> config
+                    .anyRequest().permitAll());
+        }
+        
         return http.build();
     }
 
