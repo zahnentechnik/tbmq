@@ -840,6 +840,12 @@ spring.mvc.pathmatch.matching-strategy: "${SPRING_MVC_PATH_MATCH_MATCHING_STRATE
 
 # Security parameters
 security:
+  # HTTP Authentication strategy configuration
+  http:
+    # Authentication strategy for web interface. Supported values: BASIC, NONE
+    # BASIC - enables JWT-based authentication (default)
+    # NONE - disables authentication for web interface (useful for development or when using external authentication proxy)
+    auth-strategy: "${SECURITY_HTTP_AUTH_STRATEGY:BASIC}"
   # JWT Token parameters
   jwt:
     # User JWT Token expiration time in seconds (2.5 hours)
