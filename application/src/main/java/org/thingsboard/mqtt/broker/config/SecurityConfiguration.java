@@ -126,8 +126,7 @@ public class SecurityConfiguration {
                     .exceptionHandling(config -> config.accessDeniedHandler(restAccessDeniedHandler))
                     .addFilterBefore(buildRestLoginProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
                     .addFilterBefore(buildJwtTokenAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                    .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
-                    .addFilterBefore(authExceptionHandler, buildRestLoginProcessingFilter().getClass());
+                    .addFilterBefore(buildRefreshTokenProcessingFilter(), UsernamePasswordAuthenticationFilter.class);
         } else {
             // NONE authentication strategy - disable authentication for web interface
             http.authorizeHttpRequests(config -> config
