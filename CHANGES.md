@@ -67,7 +67,7 @@ This document lists significant modifications made to the original TBMQ (ThingsB
 **New Files Created:**
 - `.github/workflows/docker-publish.yml`
   - Builds TBMQ from source using Maven
-  - Creates Docker image using existing Dockerfile
+  - Creates Docker image from `msa/mqtt-broker/`
   - Publishes to GitHub Container Registry
   - Triggers on releases, version tags, and manual dispatch
 
